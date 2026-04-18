@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Market.Api\Market.Api.csproj" />
+  <Project Path="Market.Application/Market.Application.csproj" />
+  <Project Path="Market.Domain/Market.Domain.csproj" />
+  <Project Path="Market.Infrastructure/Market.Infrastructure.csproj" />
+  <Project Path="Market.Tests/Market.Tests.csproj" />
+</Solution>
