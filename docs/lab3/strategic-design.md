@@ -39,13 +39,10 @@
 graph TD
     Catalog[Catalog Context]
     Ordering[Ordering Context]
-    Inventory[Inventory Context]
-    Marketing[Marketing Context]
+    Fulfillment[Fulfillment Context]
 
-    Ordering -->|Запитує фінальну ціну| Marketing
-    Ordering -->|Ініціює резерв/списання| Inventory
-    Ordering -->|Читає дані про товари| Catalog
-    Marketing -->|Аналізує категорії для знижок| Catalog
+    Ordering -->|Читає ціни та описи| Catalog
+    Ordering -->|Ініціює збирання та відправку| Fulfillment
 ```
 
 ---
