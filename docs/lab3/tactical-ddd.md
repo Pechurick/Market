@@ -11,9 +11,10 @@
 - **Money**: Інкапсулює суму та валюту. Використовує принцип _Fail-Fast_ (викидає виняток при спробі створення від'ємної суми).
 - **Address**: Інкапсулює дані для доставки, перевіряючи обов'язковість полів (місто, вулиця, індекс).
 
-### Приклад реалізації (Money.cs):
+### Приклад реалізації (Money.cs та Address.cs):
 
 ```csharp
+// 1. Value Object для грошей
 public record Money
 {
     public decimal Amount { get; init; }
@@ -26,6 +27,22 @@ public record Money
         return new Money(amount, currency);
     }
 }
+
+// 2. Value Object для адреси доставки
+public record Address
+{
+    public string City { get; init; }
+    public string Street { get; init; }
+    public string ZipCode { get; init; }
+
+    public static Address Create(string city, string street, string zipCode)
+    {
+        if (string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(street))
+            throw new ArgumentException("Повна адреса є обов'язковою");
+
+        return new Address(city, street, zipCode);
+    }
+}
 ```
 
 ### Налаштування в Infrastructure (EF Core):
@@ -33,10 +50,19 @@ public record Money
 Для збереження Value Objects у базі даних без створення зайвих таблиць використано механізм **Owned Entity Types**:
 
 ```csharp
+// Налаштування для Money
 builder.OwnsOne(o => o.TotalPrice, priceBuilder =>
 {
     priceBuilder.Property(p => p.Amount).HasColumnName("Price").HasColumnType("decimal(18,2)");
     priceBuilder.Property(p => p.Currency).HasColumnName("Currency").HasMaxLength(3);
+});
+
+// Налаштування для Address
+builder.OwnsOne(o => o.DeliveryAddress, addressBuilder =>
+{
+    addressBuilder.Property(a => a.City).HasColumnName("DeliveryCity").IsRequired();
+    addressBuilder.Property(a => a.Street).HasColumnName("DeliveryStreet").IsRequired();
+    addressBuilder.Property(a => a.ZipCode).HasColumnName("DeliveryZipCode");
 });
 ```
 
@@ -56,6 +82,7 @@ public class Order : AggregateRoot
     public long Id { get; private set; }
     public long UserId { get; private set; }
     public Money TotalPrice { get; private set; }
+    public Address DeliveryAddress { get; private set; }
     private readonly List<OrderItem> _items = new();
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
