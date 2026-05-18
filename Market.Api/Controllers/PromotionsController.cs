@@ -3,7 +3,7 @@ using Market.Application.Models.Responses;
 using Market.Application.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Market.Controllers; // Або Market.Api.Controllers, залежно від твого неймспейсу
+namespace Market.Controllers; 
 
 [Route("api/promotions")]
 public class PromotionsController(IPromotionsService service) : ApiController 

@@ -28,11 +28,11 @@ public class ProductEntityTypeConfiguration : IEntityTypeConfiguration<Product>
 			.HasForeignKey(x => x.ProductId)
 			.HasPrincipalKey(x => x.Id);
 
-		// Зв'язок Товар -> Бренд
+		
         builder
             .HasOne(x => x.Brand)
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.BrandId)
-            .OnDelete(DeleteBehavior.SetNull); // Якщо ми видалимо бренд Razer, товари не зникнуть, просто їхній BrandId стане null
+            .OnDelete(DeleteBehavior.SetNull); 
 	}
 }

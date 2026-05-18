@@ -7,7 +7,7 @@ public class CategoryUpdateDtoValidator : AbstractValidator<CategoryUpdateDto>
 {
     public CategoryUpdateDtoValidator()
     {
-        // Правила ті ж самі, що і для створення
+        
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Назва категорії не може бути порожньою або складатися лише з пробілів.")
             .MinimumLength(2).WithMessage("Назва категорії має містити мінімум 2 символи.")

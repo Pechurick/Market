@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
         
         services.AddValidatorsFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
         
-        // 🪄 Даємо компілятору його Action, а всередині кажемо просканувати нашу збірку
+        
 		services.AddAutoMapper(cfg => 
 		{
     		cfg.AddMaps(typeof(ServiceCollectionExtensions).Assembly);

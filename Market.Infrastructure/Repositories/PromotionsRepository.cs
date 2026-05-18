@@ -9,7 +9,7 @@ public class PromotionsRepository(MarketDbContext context) : IPromotionsReposito
     public async Task<IEnumerable<Promotion>> GetAll(CancellationToken cancellationToken) =>
         await context.Promotions.AsNoTracking().ToListAsync(cancellationToken);
 
-    public async Task<Promotion?> GetById(Guid id, CancellationToken cancellationToken) => // 👈 Змінено int на Guid
+    public async Task<Promotion?> GetById(Guid id, CancellationToken cancellationToken) => 
         await context.Promotions.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
     public async Task<Promotion?> GetByCode(string code, CancellationToken cancellationToken) =>

@@ -4,10 +4,10 @@ public class Brand
 {
     public Guid Id { get; set; }
     
-    public required string Name { get; set; } // Наприклад: "Razer", "Logitech"
+    public required string Name { get; set; } 
     
-    public string? Description { get; set; } // Опис бренду (необов'язково)
+    public string? Description { get; set; } 
 
-    // Зв'язок один-до-багатьох: один бренд має багато товарів
+    
     public ICollection<Product> Products { get; set; } = [];
 }

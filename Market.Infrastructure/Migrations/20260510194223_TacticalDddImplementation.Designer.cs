@@ -3,6 +3,7 @@ using System;
 using Market.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Market.Infrastructure.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510194223_TacticalDddImplementation")]
+    partial class TacticalDddImplementation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,8 +114,7 @@ namespace Market.Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("integer")
-                        .HasColumnName("Quantity");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

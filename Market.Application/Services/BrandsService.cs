@@ -33,7 +33,7 @@ public class BrandsService(IBrandsRepository brandsRepository, IValidator<BrandC
         await brandsRepository.Add(brand, cancellationToken);
     }
 
-    // Додай ці три методи всередину BrandsService
+    
     public async Task<BrandDto?> GetById(Guid id, CancellationToken cancellationToken)
     {
         var brand = await brandsRepository.Get(id, cancellationToken);
@@ -66,7 +66,7 @@ public class BrandsService(IBrandsRepository brandsRepository, IValidator<BrandC
 
     public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
-        // 🛡️ Наш надійний захист від зламаних зв'язків
+        
         if (await brandsRepository.HasProducts(id, cancellationToken))
         {
             throw new InvalidOperationException($"Нееможливо видалити бренд {id}, оскільки існують прив'язані до нього товари.");

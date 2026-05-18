@@ -28,7 +28,7 @@ public class ProductsRepository(MarketDbContext context) : IProductsRepository
 	public async Task<bool> IsProductInCategory(Guid categoryId, CancellationToken cancellationToken)
     {
         return await context.Products
-            .IgnoreQueryFilters() // 👁️ ЗНІМАЄМО ПОВ'ЯЗКУ: бачимо абсолютно всі товари, навіть IsDeleted = true
+            .IgnoreQueryFilters() 
             .AnyAsync(x => x.CategoryId == categoryId, cancellationToken);
     }
 
@@ -58,8 +58,8 @@ public class ProductsRepository(MarketDbContext context) : IProductsRepository
 	{
     var query = context.Products
         .AsNoTracking()
-        .Include(x => x.Category) // 👈 ОБОВ'ЯЗКОВО
-        .Include(x => x.Brand)    // 👈 ОБОВ'ЯЗКОВО
+        .Include(x => x.Category) 
+        .Include(x => x.Brand)    
         .Where(x => !categoryId.HasValue || x.CategoryId == categoryId);
 
     var totalCount = await query.CountAsync(cancellationToken);

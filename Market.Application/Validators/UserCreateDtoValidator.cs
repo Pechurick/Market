@@ -15,13 +15,10 @@ public class UserCreateDtoValidator : AbstractValidator<UserCreateDto>
             .NotEmpty().WithMessage("Прізвище не може бути порожнім.")
             .MaximumLength(50).WithMessage("Прізвище не може перевищувати 50 символів.");
 
-        // MiddleName зазвичай необов'язкове, тому перевіряємо лише довжину, якщо воно є
+        
         RuleFor(x => x.MiddleName)
             .MaximumLength(50).WithMessage("По батькові не може перевищувати 50 символів.");
             
-        // Якщо у тебе в DTO є Email, обов'язково додай це:
-        // RuleFor(x => x.Email)
-        //     .NotEmpty().WithMessage("Email є обов'язковим.")
-        //     .EmailAddress().WithMessage("Невірний формат Email.");
+        
     }
 }

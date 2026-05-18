@@ -13,9 +13,9 @@ public class User
 
 	public ICollection<Order> Orders { get; set; } = [];
 
-	// Рівень лояльності клієнта (за замовчуванням Standard)
+	
     public LoyaltyTier LoyaltyTier { get; set; } = LoyaltyTier.Standard;
 
-    // Сума всіх покупок (щоб знати, коли переводити його на Silver чи Gold)
+    
     public decimal TotalSpent { get; set; } = 0;
 }

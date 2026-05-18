@@ -12,7 +12,7 @@ public class BrandCreateDtoValidator : AbstractValidator<BrandCreateDto>
             .MinimumLength(2).WithMessage("Назва бренду має містити мінімум 2 символи.")
             .MaximumLength(100).WithMessage("Назва бренду не може перевищувати 100 символів.");
             
-        // Якщо Description передали, воно не має бути занадто довгим
+        
         RuleFor(x => x.Description)
             .MaximumLength(2000).WithMessage("Опис бренду занадто довгий.");
     }

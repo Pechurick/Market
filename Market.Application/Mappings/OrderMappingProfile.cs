@@ -8,16 +8,24 @@ public class OrderMappingProfile : Profile
 {
     public OrderMappingProfile()
     {
-        // 1. Мапінг для списку замовлень (GetAll, GetPaged)
-        CreateMap<Order, OrderListDto>();
+        
+        CreateMap<Order, OrderListDto>()
+            
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.TotalPrice.Amount));
 
-        // 2. Мапінг для детального замовлення (Get)
-        CreateMap<Order, OrderDto>();
+        
+        CreateMap<Order, OrderDto>()
+            
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.TotalPrice.Amount));
 
-        // 3. Мапінг для вкладених колекцій (елементи замовлення)
-        CreateMap<OrderItem, OrderItemDto>();
+        
+        CreateMap<OrderItem, OrderItemDto>()
+            
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price.Amount))
+            
+            .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Quantity));
 
-        // 4. Мапінг для товару всередині елемента замовлення
+        
         CreateMap<Product, OrderItemProductDto>();
     }
 }

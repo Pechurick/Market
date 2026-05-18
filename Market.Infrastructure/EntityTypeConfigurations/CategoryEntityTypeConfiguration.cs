@@ -21,6 +21,6 @@ public class CategoryEntityTypeConfiguration : IEntityTypeConfiguration<Category
             .WithOne(x => x.Category)
             .HasPrincipalKey(x => x.Id)
             .HasForeignKey(x => x.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict); // 🛡️ ВАЖЛИВО: Забороняємо каскадне видалення товарів!;
+            .OnDelete(DeleteBehavior.Restrict); 
     }
 }

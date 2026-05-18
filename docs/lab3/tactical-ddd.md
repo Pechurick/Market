@@ -9,9 +9,9 @@
 Для забезпечення валідації на рівні типів та імутабельності (незмінності) даних було впроваджено два ключові об'єкти-значення. Вони інкапсулюють бізнес-правила та гарантують, що доменна модель не перейде в некоректний стан.
 
 - **Money**: Інкапсулює суму та валюту. Використовує принцип _Fail-Fast_ (викидає виняток при спробі створення від'ємної суми).
-- **Address**: Інкапсулює дані для доставки, перевіряючи обов'язковість полів (місто, вулиця, індекс).
+- **Quantity**: Інкапсулює кількість товару в замовленні. Гарантує, що кількість завжди більша за нуль і не перевищує встановлені бізнес-ліміти (наприклад, не більше 1000 одиниць).
 
-### Приклад реалізації (Money.cs та Address.cs):
+### Приклад реалізації (Money.cs та Quantity.cs):
 
 ```csharp
 // 1. Value Object для грошей
@@ -28,42 +28,43 @@ public record Money
     }
 }
 
-// 2. Value Object для адреси доставки
-public record Address
+// 2. Value Object для кількості
+public record Quantity
 {
-    public string City { get; init; }
-    public string Street { get; init; }
-    public string ZipCode { get; init; }
+    public int Value { get; init; }
 
-    public static Address Create(string city, string street, string zipCode)
+    private Quantity(int value) => Value = value;
+
+    public static Quantity Create(int value)
     {
-        if (string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(street))
-            throw new ArgumentException("Повна адреса є обов'язковою");
-
-        return new Address(city, street, zipCode);
+        if (value <= 0) throw new ArgumentException("Кількість має бути > 0.");
+        if (value > 1000) throw new ArgumentException("Перевищено ліміт кількості.");
+        return new Quantity(value);
     }
+
+    public static implicit operator int(Quantity quantity) => quantity.Value;
 }
 ```
 
 ### Налаштування в Infrastructure (EF Core):
 
-Для збереження Value Objects у базі даних без створення зайвих таблиць використано механізм **Owned Entity Types**:
+Для інтеграції Value Objects з реляційною базою даних застосовано різні підходи EF Core залежно від структури об'єкта:
 
 ```csharp
-// Налаштування для Money
+// Налаштування для Money (Owned Entity Type)
 builder.OwnsOne(o => o.TotalPrice, priceBuilder =>
 {
     priceBuilder.Property(p => p.Amount).HasColumnName("Price").HasColumnType("decimal(18,2)");
     priceBuilder.Property(p => p.Currency).HasColumnName("Currency").HasMaxLength(3);
 });
 
-// Налаштування для Address
-builder.OwnsOne(o => o.DeliveryAddress, addressBuilder =>
-{
-    addressBuilder.Property(a => a.City).HasColumnName("DeliveryCity").IsRequired();
-    addressBuilder.Property(a => a.Street).HasColumnName("DeliveryStreet").IsRequired();
-    addressBuilder.Property(a => a.ZipCode).HasColumnName("DeliveryZipCode");
-});
+// Налаштування для Quantity (Value Conversion)
+builder.Property(oi => oi.Quantity)
+    .HasConversion(
+        q => q.Value,                    // Як записувати в БД (зберігаємо звичайний int)
+        v => Quantity.Create(v))         // Як читати з БД (перетворюємо int назад у Quantity)
+    .HasColumnName("Quantity")
+    .IsRequired();
 ```
 
 ---
@@ -73,7 +74,7 @@ builder.OwnsOne(o => o.DeliveryAddress, addressBuilder =>
 Сутність **Order** була рефакторена з "анемічної" структури у повноцінний корінь агрегату. Це забезпечує повну інкапсуляцію та захист внутрішніх інваріантів.
 
 - **Інкапсуляція:** Усі властивості мають `private set`.
-- **Захист стану:** Додавання товарів можливе лише через бізнес-метод `AddItem()`, який контролює кількість та перераховує загальну вартість.
+- **Захист стану:** Додавання товарів можливе лише через бізнес-метод `AddItem()`, який застосовує VO `Quantity` та `Money`.
 - **Колекції:** Внутрішній список `_items` прихований, доступ назовні надається через `IReadOnlyCollection`.
 
 ```csharp
@@ -81,22 +82,39 @@ public class Order : AggregateRoot
 {
     public long Id { get; private set; }
     public long UserId { get; private set; }
+    public OrderStatus Status { get; private set; } = OrderStatus.Pending;
     public Money TotalPrice { get; private set; }
-    public Address DeliveryAddress { get; private set; }
+
     private readonly List<OrderItem> _items = new();
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
-    public void AddItem(long productId, Money price, int quantity)
+    public void AddItem(long productId, Money price, int quantityValue)
     {
-        if (quantity <= 0) throw new ArgumentException("Кількість має бути > 0");
+        if (Status != OrderStatus.Pending)
+            throw new InvalidOperationException("Неможливо змінити товари, замовлення вже в обробці.");
+
+        // Делегуємо валідацію об'єкту-значенню
+        var quantity = Quantity.Create(quantityValue);
 
         var existingItem = _items.FirstOrDefault(x => x.ProductId == productId);
         if (existingItem != null) { /* логіка оновлення кількості */ }
         else {
-            _items.Add(new OrderItem(this.Id, productId, price, quantity));
+            _items.Add(new OrderItem(this.Id, productId, price, quantity.Value));
         }
 
         RecalculateTotal();
+    }
+
+    private void RecalculateTotal()
+    {
+        if (!_items.Any())
+        {
+            TotalPrice = Money.Create(0, "UAH");
+            return;
+        }
+
+        var sum = _items.Sum(x => x.Price.Amount * x.Quantity.Value);
+        TotalPrice = Money.Create(sum, _items.First().Price.Currency);
     }
 }
 ```
@@ -137,15 +155,26 @@ public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
 ### Command Handler (Оркестрація):
 
 ```csharp
-public class CreateOrderCommandHandler(...) : IRequestHandler<CreateOrderCommand, long>
+public class CreateOrderCommandHandler(
+    IOrdersRepository ordersRepository,
+    IProductsRepository productsRepository)
+    : IRequestHandler<CreateOrderCommand, long>
 {
     public async Task<long> Handle(CreateOrderCommand command, CancellationToken ct)
     {
-        var products = await _productsRepository.Get(command.Request.ProductIds, ct);
+        var requestedIds = command.Request.Items!.Select(x => x.ProductId).Distinct().ToList();
+        var products = (await productsRepository.Get(requestedIds, ct)).ToList();
+
         var order = Order.Create(command.UserId);
 
-        foreach (var p in products)
-            order.AddItem(p.Id, Money.Create(p.Price), 1);
+        foreach (var itemDto in command.Request.Items)
+        {
+            var product = products.First(p => p.Id == itemDto.ProductId);
+            var priceVo = Money.Create(product.Price, "UAH");
+
+            // Агрегат захищає інваріанти через метод AddItem
+            order.AddItem(product.Id, priceVo, itemDto.Amount);
+        }
 
         await _ordersRepository.Add(order, ct);
         return order.Id;
@@ -169,11 +198,3 @@ public class OrderCreatedEventHandler(ILogger<OrderCreatedEventHandler> logger)
 ```
 
 ---
-
-## Критерії приймання (Definition of Done)
-
-- [x] Сутність `Order` не має публічних сеттерів.
-- [x] Використовуються Value Objects `Money` та `Address`.
-- [x] При створенні замовлення через API успішно збуджується та обробляється `OrderCreatedEvent`.
-- [x] Бізнес-логіка перевірки інваріантів знаходиться всередині Агрегату.
-- [x] Реалізовано Command Handler для сценарію створення замовлення.

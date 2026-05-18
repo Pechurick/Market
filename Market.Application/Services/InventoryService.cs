@@ -32,7 +32,7 @@ public class InventoryService(IProductsRepository productsRepository) : IInvento
         
         foreach (var product in products)
         {
-            var amountInOrder = orderItems.First(i => i.ProductId == product.Id).Amount;
+            var amountInOrder = orderItems.First(i => i.ProductId == product.Id).Quantity;
             product.ReservedAmount -= amountInOrder; 
         }
 
@@ -46,7 +46,7 @@ public class InventoryService(IProductsRepository productsRepository) : IInvento
         
         foreach (var product in products)
         {
-            var amountInOrder = orderItems.First(i => i.ProductId == product.Id).Amount;
+            var amountInOrder = orderItems.First(i => i.ProductId == product.Id).Quantity;
             
             product.ReservedAmount -= amountInOrder; 
             product.Amount += amountInOrder;

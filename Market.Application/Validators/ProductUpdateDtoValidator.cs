@@ -16,11 +16,11 @@ public class ProductUpdateDtoValidator : AbstractValidator<ProductUpdateDto>
             .NotEmpty().WithMessage("Товар обов'язково повинен належати до певної категорії.");
 
         RuleFor(x => x.Price)
-            .NotNull().WithMessage("Ціна товару є обов'язковою.") // 👈 Ловить відсутність поля
+            .NotNull().WithMessage("Ціна товару є обов'язковою.") 
             .GreaterThan(0).WithMessage("Ціна товару має бути більшою за нуль.");
 
-        RuleFor(x => x.Amount) // Або Amount
-            .NotNull().WithMessage("Кількість товару є обов'язковою.") // 👈 Ловить відсутність поля
+        RuleFor(x => x.Amount) 
+            .NotNull().WithMessage("Кількість товару є обов'язковою.") 
             .GreaterThanOrEqualTo(0).WithMessage("Кількість товару не може бути від'ємною.");
     }
 }

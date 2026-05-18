@@ -3,7 +3,7 @@ using Market.Application.Models.Requests;
 
 namespace Market.Application.Validators;
 
-// Правила зазвичай такі ж самі, як і при створенні
+
 public class UserUpdateDtoValidator : AbstractValidator<UserUpdateDto>
 {
     public UserUpdateDtoValidator()

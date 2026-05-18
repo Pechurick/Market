@@ -3,6 +3,7 @@ using System;
 using Market.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Market.Infrastructure.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517124019_AddQuantityValueObject")]
+    partial class AddQuantityValueObject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -11,7 +11,7 @@ public class PricingEngine(
     IPromotionsRepository promotionsRepository,
     TimeProvider timeProvider) : IPricingEngine
 {
-    // Головний метод тепер читається як проста інструкція (Pipeline)
+    
     public async Task<(decimal FinalPrice, Guid? PromoId)> CalculateFinalPriceAsync(
         long userId, 
         List<Product> products, 
@@ -19,16 +19,16 @@ public class PricingEngine(
         string? promoCode, 
         CancellationToken cancellationToken)
     {
-        // 1. Збираємо всі необхідні дані перед математикою
+        
         var user = await usersRepository.Get(userId, cancellationToken);
         var promotion = string.IsNullOrWhiteSpace(promoCode) ? null : await GetValidPromotionOrThrow(promoCode, cancellationToken);
 
-        // 2. Рахуємо базові показники
+        
         decimal basePrice = CalculateBasePrice(products, items);
         decimal currentPrice = basePrice;
         int totalItemsCount = items.Sum(x => x.Amount);
 
-        // 3. Застосовуємо знижки по черзі (Ланцюжок)
+        
         currentPrice = ApplyBulkDiscount(currentPrice, totalItemsCount);
         currentPrice = ApplyLoyaltyDiscount(currentPrice, user?.LoyaltyTier);
         currentPrice = ApplyPromotionDiscount(currentPrice, basePrice, products, items, promotion);
@@ -36,7 +36,7 @@ public class PricingEngine(
         return (Math.Round(currentPrice, 2), promotion?.Id);
     }
 
-    // --- Приватні методи з чистою математикою ---
+    
 
     private decimal CalculateBasePrice(List<Product> products, IEnumerable<OrderItemCreateDto> items) =>
         products.Sum(p => p.Price * items.First(i => i.ProductId == p.Id).Amount);
@@ -70,7 +70,7 @@ public class PricingEngine(
             return currentPrice - (currentPrice * (promo.DiscountPercentage / 100m));
         }
 
-        // Логіка для категорійної знижки
+        
         decimal baseCategoryPrice = products
             .Where(p => p.CategoryId == promo.CategoryId.Value)
             .Sum(p => p.Price * items.First(i => i.ProductId == p.Id).Amount);
@@ -83,7 +83,7 @@ public class PricingEngine(
         return currentPrice - discountAmount;
     }
 
-    // --- Приватний метод для валідації БД ---
+    
 
     private async Task<Promotion> GetValidPromotionOrThrow(string promoCode, CancellationToken ct)
     {

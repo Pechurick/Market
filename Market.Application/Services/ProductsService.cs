@@ -25,7 +25,7 @@ public class ProductsService(IProductsRepository repository, IValidator<ProductC
 			Amount = x.Amount,
 			Price = x.Price,
 			BrandId = x.BrandId,
-    		BrandName = x.Brand?.Name // Знак питання врятує, якщо бренд не вказано
+    		BrandName = x.Brand?.Name 
 		});
 	}
 	
@@ -50,7 +50,7 @@ public class ProductsService(IProductsRepository repository, IValidator<ProductC
 			Amount = product.Amount,
 			Price = product.Price,
 			BrandId = product.BrandId,
-    		BrandName = product.Brand?.Name // Знак питання врятує, якщо бренд не вказано
+    		BrandName = product.Brand?.Name 
 		};
 	}
 
@@ -108,14 +108,14 @@ public class ProductsService(IProductsRepository repository, IValidator<ProductC
     CancellationToken cancellationToken)
 	{
 		await pagedValidator.ValidateAndThrowAsync(pagedRequest, cancellationToken);
-    	// Отримуємо кортеж із репозиторію
+    	
     	var (products, totalCount) = await repository.GetPaged(
         	categoryId, 
         	pagedRequest.PageNumber, 
         	pagedRequest.PageSize, 
         	cancellationToken);
 
-    	// Мапимо сутності в DTO
+    	
     	var dtos = products.Select(x => new ProductListDto
     	{
         	Id = x.Id,

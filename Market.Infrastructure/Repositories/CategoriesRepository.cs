@@ -8,14 +8,12 @@ public class CategoriesRepository(MarketDbContext context) : ICategoriesReposito
 {
 	public async Task<IEnumerable<Category>> GetAll(CancellationToken cancellationToken)
     {
-        // Прибираємо Include, Where і AsNoTracking. 
-        // Просто беремо всі категорії. EF Core сам зв'яже їх між собою в пам'яті!
         return await context.Categories.ToListAsync(cancellationToken);
     }
 	
 	public async Task<Category?> Get(Guid id, CancellationToken cancellationToken) =>
         await context.Categories
-            .Include(c => c.SubCategories) // І тут теж
+            .Include(c => c.SubCategories) 
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 

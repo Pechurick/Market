@@ -30,8 +30,6 @@ public class BrandsController(IBrandsService brandsService) : ControllerBase
 
         if (brand is null)
         {
-            // Оскільки ми не кидаємо тут помилку, а просто повертаємо null, 
-            // контролер має сам віддати 404
             return NotFound(new { error = "Бренд не знайдено" }); 
         }
 
@@ -42,13 +40,13 @@ public class BrandsController(IBrandsService brandsService) : ControllerBase
     public async Task<ActionResult> Update(Guid id, BrandUpdateDto request, CancellationToken cancellationToken)
     {
         await brandsService.Update(id, request, cancellationToken);
-        return NoContent(); // Статус 204: Успішно, але без тіла відповіді
+        return NoContent(); 
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         await brandsService.Delete(id, cancellationToken);
-        return NoContent(); // Статус 204
+        return NoContent(); 
     }
 }

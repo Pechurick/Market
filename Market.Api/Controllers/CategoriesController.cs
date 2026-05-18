@@ -24,10 +24,10 @@ public class CategoriesController(ICategoriesService service) : ApiController
 
         if (category is null)
         {
-            return NotFound(new { Message = $"Category with ID {id} not found." }); // Повертаємо красиву помилку 404
+            return NotFound(new { Message = $"Category with ID {id} not found." }); 
         }
 
-        return Ok(category); // Повертаємо статус 200 і саму категорію у форматі JSON
+        return Ok(category); 
     }
 	
 	[HttpPost]

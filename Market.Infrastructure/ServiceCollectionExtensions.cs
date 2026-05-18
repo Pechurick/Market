@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
                 configuration.GetConnectionString("Market"),
                 npgsqlOptions => npgsqlOptions
                     .MigrationsAssembly(typeof(MarketDbContext).Assembly.FullName)
-                    // ❌ Рядок .EnableRetryOnFailure(...) повністю видалено
+                    
             );
         });
         

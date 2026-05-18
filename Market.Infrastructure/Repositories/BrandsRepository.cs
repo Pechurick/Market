@@ -22,7 +22,7 @@ public class BrandsRepository(MarketDbContext context) : IBrandsRepository
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    // Додай ці методи всередину класу BrandsRepository
+
     public async Task Update(Brand brand, CancellationToken cancellationToken)
     {
         context.Brands.Update(brand);

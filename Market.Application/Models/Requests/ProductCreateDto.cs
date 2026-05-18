@@ -7,5 +7,5 @@ public class ProductCreateDto
 	public int? Amount { get; set; }
 	public decimal? Price { get; set; }
 
-	public Guid? BrandId { get; set; } // Щоб при створенні миші можна було вказати Razer
+	public Guid? BrandId { get; set; } 
 }

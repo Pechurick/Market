@@ -11,23 +11,25 @@ builder.Services.AddApplication();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+builder.Services.AddMediatR(cfg => 
+    cfg.RegisterServicesFromAssembly(typeof(Market.Application.Commands.CreateOrderCommand).Assembly));
 
 
 var app = builder.Build();
 
-// Глобальний перехоплювач помилок
+
 app.Use(async (context, next) =>
 {
     try
     {
-        await next(); // Пропускаємо запит далі в контролери
+        await next(); 
     }
-    catch (ValidationException ex) // 👈 НОВИЙ БЛОК ДЛЯ ВАЛІДАЦІЇ
+    catch (ValidationException ex) 
     {
-        context.Response.StatusCode = 400; // Bad Request
+        context.Response.StatusCode = 400;
         context.Response.ContentType = "application/json";
         
-        // Збираємо всі помилки валідації у зручний масив для фронтенду
+        
         var errors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
         
         await context.Response.WriteAsJsonAsync(new { 
@@ -35,19 +37,19 @@ app.Use(async (context, next) =>
             details = errors 
         });
     }
-    catch (ArgumentNullException ex) // Якщо чогось не знайдено
+    catch (ArgumentNullException ex) 
     {
-        context.Response.StatusCode = 404; // Not Found
+        context.Response.StatusCode = 404; 
         context.Response.ContentType = "application/json";
         await context.Response.WriteAsJsonAsync(new { error = "Ресурс не знайдено", details = ex.ParamName });
     }
-    catch (InvalidOperationException ex) // Якщо порушена бізнес-логіка (як з видаленням категорії)
+    catch (InvalidOperationException ex) 
     {
-        context.Response.StatusCode = 400; // Bad Request
+        context.Response.StatusCode = 400; 
         context.Response.ContentType = "application/json";
         await context.Response.WriteAsJsonAsync(new { error = "Помилка бізнес-логіки", message = ex.Message });
     }
-    catch (Exception ex) // Усі справжні аварії
+    catch (Exception ex) 
     {
         context.Response.StatusCode = 500;
         context.Response.ContentType = "application/json";

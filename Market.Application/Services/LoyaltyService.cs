@@ -13,7 +13,7 @@ public class LoyaltyService(
         var user = await usersRepository.Get(userId, cancellationToken);
         if (user == null) return;
 
-        // Звертаємося до бази, щоб порахувати загальну суму всіх доставлених замовлень
+        
         var calculatedTotal = await ordersRepository.GetTotalSpentByUser(userId, cancellationToken);
 
         var newTier = calculatedTotal switch
@@ -24,7 +24,7 @@ public class LoyaltyService(
             _        => LoyaltyTier.Standard   
         };
 
-        // Оновлюємо юзера тільки якщо дані реально змінилися (економимо запити до БД)
+        
         if (user.LoyaltyTier != newTier || user.TotalSpent != calculatedTotal)
         {
             user.LoyaltyTier = newTier;

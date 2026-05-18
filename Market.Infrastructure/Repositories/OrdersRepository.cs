@@ -18,7 +18,8 @@ public class OrdersRepository(MarketDbContext context) : IOrdersRepository
     public async Task<Order?> Get(long id, long userId, CancellationToken cancellationToken) =>
         await context.Orders
             .Include(x => x.Items)
-            .ThenInclude(x => x.Product)
+
+            .ThenInclude(x => x.Product) 
             .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
     public async Task Add(Order order, CancellationToken cancellationToken)
@@ -33,12 +34,12 @@ public class OrdersRepository(MarketDbContext context) : IOrdersRepository
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    // ТУТ ТЕЖ ПОВЕРНУЛИ long
     public async Task<decimal> GetTotalSpentByUser(long userId, CancellationToken ct) 
     {
         return await context.Orders
             .Where(o => o.UserId == userId && o.Status == OrderStatus.Delivered)
-            .SumAsync(o => o.Price, ct);
+           
+            .SumAsync(o => o.TotalPrice.Amount, ct); 
     }
 
     public async Task<(IEnumerable<Order> Items, int TotalCount)> GetPaged(
@@ -46,21 +47,21 @@ public class OrdersRepository(MarketDbContext context) : IOrdersRepository
     int pageNumber, 
     int pageSize, 
     CancellationToken cancellationToken)
-{
-    var query = context.Orders
-        .AsNoTracking()
-        .Where(x => x.UserId == userId);
+    {
+        var query = context.Orders
+            .AsNoTracking()
+            .Where(x => x.UserId == userId);
 
-    // Спочатку рахуємо загальну кількість для цього юзера
-    var totalCount = await query.CountAsync(cancellationToken);
+        
+        var totalCount = await query.CountAsync(cancellationToken);
 
-    // Потім дістаємо сторінку (сортуємо від нових до старих)
-    var items = await query
-        .OrderByDescending(x => x.CreatedAt) 
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync(cancellationToken);
+        
+        var items = await query
+            .OrderByDescending(x => x.CreatedAt) 
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
 
-    return (items, totalCount);
-}
+        return (items, totalCount);
+    }
 }
